@@ -1,0 +1,31 @@
+name: Get secrets from secret manager
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    # Configure Workload Identity Federation and generate an access token.
+    - id: 'auth'
+      name: 'Authenticate to Google Cloud'
+      uses: 'google-github-actions/auth@v2'
+      with:
+        token_format: 'access_token'
+        workload_identity_provider: 'projects/399377201308/locations/global/workloadIdentityPools/git-specifed/providers/git-specifed'
+        service_account: 'git-specified@rational-aria-416911.iam.gserviceaccount.com'
+
+    # Run gcloud commands
+    - id: 'gcloud'
+      name: 'gcloud'
+      run: |-
+        gcloud secrets versions access "latest" --secret "testkey"
